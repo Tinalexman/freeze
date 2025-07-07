@@ -7,8 +7,8 @@ class LoginPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    AuthState authState = ref.watch(authNotifierProvider);
-    AuthNotifier authNotifier = ref.read(authNotifierProvider.notifier);
+    final AuthState authState = ref.watch(authNotifierProvider);
+    final AuthNotifier authNotifier = ref.read(authNotifierProvider.notifier);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Login')),

@@ -21,7 +21,7 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<Either<Failure, String>> getAuthUrl() async {
     try {
-      final authUrl = await remoteDataSource.getAuthUrl();
+      final String authUrl = await remoteDataSource.getAuthUrl();
       return Right(authUrl);
     } catch (e) {
       return Left(ServerFailure(e.toString()));
@@ -31,7 +31,7 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<Either<Failure, User>> getCurrentUser() async {
     try {
-      final userModel = await remoteDataSource.getCurrentUser();
+      final UserModel userModel = await remoteDataSource.getCurrentUser();
       await _saveUserData(userModel);
       return Right(userModel.toEntity());
     } catch (e) {
@@ -42,7 +42,9 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<Either<Failure, User>> handleAuthCallback(String code) async {
     try {
-      final userModel = await remoteDataSource.handleAuthCallback(code);
+      final UserModel userModel = await remoteDataSource.handleAuthCallback(
+        code,
+      );
       await _saveUserData(userModel);
       return Right(userModel.toEntity());
     } catch (e) {
@@ -64,7 +66,7 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<Either<Failure, bool>> isAuthenticated() async {
     try {
-      final token = await secureStorage.read(key: _tokenKey);
+      final String? token = await secureStorage.read(key: _tokenKey);
       return Right(token != null);
     } catch (e) {
       return Left(CacheFailure(e.toString()));
@@ -72,7 +74,7 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   Future<void> _saveUserData(UserModel user) async {
-    final userData =
+    final String userData =
         'id:${user.id},githubId:${user.githubId},username:${user.username},email:${user.email},avatarUrl:${user.avatarUrl},createdAt:${user.createdAt.toIso8601String()},updatedAt:${user.updatedAt.toIso8601String()}';
     await secureStorage.write(key: _userKey, value: userData);
   }

@@ -1,23 +1,26 @@
+import 'package:dartz/dartz.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:freeze/core/error/failures.dart';
 import 'package:freeze/features/auth/data/datasources/auth_remote_data_source.dart';
 import 'package:freeze/features/auth/data/repositories/auth_repository_impl.dart';
+import 'package:freeze/features/auth/domain/entities/user.dart';
 import 'package:freeze/features/auth/domain/repositories/auth_repository.dart';
 import 'package:freeze/features/auth/domain/usecases/get_auth_url.dart';
 
 // Providers
 final Provider<AuthRemoteDataSource> authRemoteDataSourceProvider =
-    Provider<AuthRemoteDataSource>((ProviderRef<AuthRemoteDataSource> ref) {
+    Provider<AuthRemoteDataSource>((Ref ref) {
       return AuthRemoteDataSourceImpl();
     });
 
 final Provider<FlutterSecureStorage> secureStorageProvider =
-    Provider<FlutterSecureStorage>((ProviderRef<FlutterSecureStorage> ref) {
+    Provider<FlutterSecureStorage>((Ref ref) {
       return const FlutterSecureStorage();
     });
 
 final Provider<AuthRepository> authRepositoryProvider =
-    Provider<AuthRepository>((ProviderRef<AuthRepository> ref) {
+    Provider<AuthRepository>((Ref ref) {
       final AuthRemoteDataSource remoteDataSource = ref.watch(
         authRemoteDataSourceProvider,
       );
@@ -30,9 +33,7 @@ final Provider<AuthRepository> authRepositoryProvider =
       );
     });
 
-final Provider<GetAuthUrl> getAuthUrlProvider = Provider<GetAuthUrl>((
-  ProviderRef<GetAuthUrl> ref,
-) {
+final Provider<GetAuthUrl> getAuthUrlProvider = Provider<GetAuthUrl>((Ref ref) {
   final AuthRepository repository = ref.watch(authRepositoryProvider);
   return GetAuthUrl(repository);
 });
@@ -81,9 +82,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<void> _initializeAuth() async {
-    final isAuthResult = await _authRepository.isAuthenticated();
-    isAuthResult.fold((failure) => state = AuthError(failure.message), (
-      isAuthenticated,
+    final Either<Failure, bool> isAuthResult = await _authRepository
+        .isAuthenticated();
+    isAuthResult.fold((Failure failure) => state = AuthError(failure.message), (
+      bool isAuthenticated,
     ) {
       if (isAuthenticated) {
         _getCurrentUser();
@@ -95,10 +97,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   Future<void> _getCurrentUser() async {
     state = const AuthLoading();
-    final result = await _authRepository.getCurrentUser();
+    final Either<Failure, User> result = await _authRepository.getCurrentUser();
     result.fold(
-      (failure) => state = AuthError(failure.message),
-      (user) => state = AuthAuthenticated(
+      (Failure failure) => state = AuthError(failure.message),
+      (User user) => state = AuthAuthenticated(
         username: user.username,
         email: user.email,
         avatarUrl: user.avatarUrl,
@@ -108,8 +110,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   Future<void> login() async {
     state = const AuthLoading();
-    final result = await _authRepository.getAuthUrl();
-    result.fold((failure) => state = AuthError(failure.message), (authUrl) {
+    final Either<Failure, String> result = await _authRepository.getAuthUrl();
+    result.fold((Failure failure) => state = AuthError(failure.message), (
+      String authUrl,
+    ) {
       // Handle auth URL (e.g., launch browser)
       state = const AuthUnauthenticated();
     });
@@ -117,10 +121,11 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   Future<void> handleAuthCallback(String code) async {
     state = const AuthLoading();
-    final result = await _authRepository.handleAuthCallback(code);
+    final Either<Failure, User> result = await _authRepository
+        .handleAuthCallback(code);
     result.fold(
-      (failure) => state = AuthError(failure.message),
-      (user) => state = AuthAuthenticated(
+      (Failure failure) => state = AuthError(failure.message),
+      (User user) => state = AuthAuthenticated(
         username: user.username,
         email: user.email,
         avatarUrl: user.avatarUrl,
@@ -130,18 +135,16 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   Future<void> logout() async {
     state = const AuthLoading();
-    final result = await _authRepository.logout();
+    final Either<Failure, void> result = await _authRepository.logout();
     result.fold(
-      (failure) => state = AuthError(failure.message),
-      (_) => state = const AuthUnauthenticated(),
+      (Failure failure) => state = AuthError(failure.message),
+      (void _) => state = const AuthUnauthenticated(),
     );
   }
 }
 
 final StateNotifierProvider<AuthNotifier, AuthState> authNotifierProvider =
-    StateNotifierProvider<AuthNotifier, AuthState>((
-      StateNotifierProviderRef<AuthNotifier, AuthState> ref,
-    ) {
+    StateNotifierProvider<AuthNotifier, AuthState>((Ref ref) {
       final AuthRepository repository = ref.watch(authRepositoryProvider);
       return AuthNotifier(repository);
     });

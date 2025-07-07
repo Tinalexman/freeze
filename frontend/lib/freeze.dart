@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:freeze/core/routing/routes.dart';
 import 'package:freeze/features/auth/presentation/providers/auth_providers.dart';
 import 'package:freeze/features/auth/presentation/routes.dart';
@@ -75,15 +74,69 @@ class _FreezeState extends ConsumerState<Freeze> {
   Widget build(BuildContext context) {
     return MaterialApp.router(
       title: 'Freeze - Flutter with ease',
-      theme: FlexThemeData.light(
-        scheme: FlexScheme.verdunHemlock,
+      builder: (context, child) {
+        // Responsive design using MediaQuery
+        final mediaQuery = MediaQuery.of(context);
+        final screenWidth = mediaQuery.size.width;
+
+        // Apply responsive constraints
+        Widget responsiveChild = child!;
+
+        // For larger screens, center the content with max width
+        if (screenWidth > 1200) {
+          responsiveChild = Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 1200),
+              child: child,
+            ),
+          );
+        }
+
+        return responsiveChild;
+      },
+      theme: ThemeData(
         useMaterial3: true,
         fontFamily: 'Outfit',
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF1E88E5),
+          brightness: Brightness.light,
+        ),
+        cardTheme: const CardThemeData(
+          elevation: 2,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(12)),
+          ),
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+        ),
       ),
-      darkTheme: FlexThemeData.dark(
-        scheme: FlexScheme.verdunHemlock,
+      darkTheme: ThemeData(
         useMaterial3: true,
         fontFamily: 'Outfit',
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF1E88E5),
+          brightness: Brightness.dark,
+        ),
+        cardTheme: const CardThemeData(
+          elevation: 2,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(12)),
+          ),
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+        ),
       ),
       themeMode: ThemeMode.dark,
       routerConfig: _router,

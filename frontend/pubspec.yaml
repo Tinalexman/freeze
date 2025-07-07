@@ -12,35 +12,19 @@ dependencies:
   flutter:
     sdk: flutter
 
-  cupertino_icons: ^1.0.8
-
-  # HTTP client for API calls
+  dartz: ^0.10.1
   dio: ^5.4.0
 
-  # State management
   flutter_riverpod: ^2.4.9
+  flutter_secure_storage: ^9.0.0
 
-  # URL launcher for OAuth
-  url_launcher: ^6.2.1
-
-  # Secure storage for storing auth tokens
-  flutter_secure_storage:
-    ^9.0.0
-
-    # JSON serialization
-  json_annotation: ^4.8.1
-
-  # Functional programming
-  dartz: ^0.10.1
-
-  # Routing
   go_router: ^13.0.0
 
-  # Responsive design
+  json_annotation: ^4.8.1
+
   responsive_framework: ^1.1.1
 
-  # Color schemes
-  flex_color_scheme: ^7.3.1
+  url_launcher: ^6.2.1
 
 dev_dependencies:
   flutter_test:
