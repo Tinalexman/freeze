@@ -7,7 +7,6 @@ import 'pages/dashboard_page.dart';
 List<GoRoute> get dashboardRoutes => <GoRoute>[
   GoRoute(
     path: Routes.dashboard,
-    name: 'dashboard',
     pageBuilder: (_, state) {
       return CustomTransitionPage(
         key: state.pageKey,

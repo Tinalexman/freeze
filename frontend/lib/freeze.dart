@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:freeze/core/utils/responsive.dart';
 import 'package:go_router/go_router.dart';
 import 'package:freeze/core/routing/routes.dart';
+import 'package:freeze/core/theme/app_theme.dart';
 import 'package:freeze/features/auth/presentation/providers/auth_providers.dart';
 import 'package:freeze/features/auth/presentation/routes.dart';
 import 'package:freeze/features/home/presentation/routes.dart';
 import 'package:freeze/features/dashboard/presentation/routes.dart';
 import 'package:freeze/features/projects/presentation/routes.dart';
+import 'package:responsive_framework/responsive_framework.dart';
 
 class Freeze extends ConsumerStatefulWidget {
   const Freeze({super.key});
@@ -75,69 +78,29 @@ class _FreezeState extends ConsumerState<Freeze> {
     return MaterialApp.router(
       title: 'Freeze - Flutter with ease',
       builder: (context, child) {
-        // Responsive design using MediaQuery
-        final mediaQuery = MediaQuery.of(context);
-        final screenWidth = mediaQuery.size.width;
-
-        // Apply responsive constraints
-        Widget responsiveChild = child!;
-
-        // For larger screens, center the content with max width
-        if (screenWidth > 1200) {
-          responsiveChild = Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 1200),
-              child: child,
+        Widget newChild = ResponsiveBreakpoints.builder(
+          child: child!,
+          breakpoints: [
+            const Breakpoint(start: 320, end: 375, name: PHONE),
+            const Breakpoint(start: 376, end: 450, name: MOBILE),
+            const Breakpoint(start: 451, end: 768, name: TABLET),
+            const Breakpoint(
+              start: 769,
+              end: 1024,
+              name: AppBreakpoints.laptop,
             ),
-          );
-        }
-
-        return responsiveChild;
+            const Breakpoint(start: 1025, end: 1440, name: DESKTOP),
+            const Breakpoint(
+              start: 1441,
+              end: double.infinity,
+              name: AppBreakpoints.ultraWide,
+            ),
+          ],
+        );
+        return newChild;
       },
-      theme: ThemeData(
-        useMaterial3: true,
-        fontFamily: 'Outfit',
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF1E88E5),
-          brightness: Brightness.light,
-        ),
-        cardTheme: const CardThemeData(
-          elevation: 2,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(12)),
-          ),
-        ),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ),
-        ),
-      ),
-      darkTheme: ThemeData(
-        useMaterial3: true,
-        fontFamily: 'Outfit',
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF1E88E5),
-          brightness: Brightness.dark,
-        ),
-        cardTheme: const CardThemeData(
-          elevation: 2,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(12)),
-          ),
-        ),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ),
-        ),
-      ),
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.dark,
       routerConfig: _router,
       debugShowCheckedModeBanner: false,

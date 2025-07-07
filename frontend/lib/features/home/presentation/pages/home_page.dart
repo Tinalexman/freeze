@@ -1,131 +1,119 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:freeze/core/routing/routes.dart';
+import '../widgets/animated_header.dart';
+import '../widgets/hero_section.dart';
+import '../widgets/animated_features.dart';
+import '../widgets/call_to_action.dart';
+import '../widgets/particles_painter.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
+  late AnimationController _fadeController;
+  late AnimationController _slideController;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _fadeController = AnimationController(
+      duration: const Duration(milliseconds: 1500),
+      vsync: this,
+    );
+    _slideController = AnimationController(
+      duration: const Duration(milliseconds: 1200),
+      vsync: this,
+    );
+
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _fadeController, curve: Curves.easeOut));
+
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0, 0.5), end: Offset.zero).animate(
+          CurvedAnimation(parent: _slideController, curve: Curves.elasticOut),
+        );
+
+    _fadeController.forward();
+    _slideController.forward();
+  }
+
+  @override
+  void dispose() {
+    _fadeController.dispose();
+    _slideController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Freeze'),
-        actions: [
-          TextButton(
-            onPressed: () => context.go(Routes.login),
-            child: const Text('Login'),
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 48),
-            const Text(
-              'Share Flutter Apps as PWAs',
-              style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Deploy your Flutter web apps instantly with shareable links. No complex setup, no server management.',
-              style: TextStyle(fontSize: 20, color: Colors.grey),
-            ),
-            const SizedBox(height: 48),
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () => context.go(Routes.login),
-                    child: const Text('Get Started'),
-                  ),
+      body: Stack(
+        children: [
+          // Animated background
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                    Theme.of(context).colorScheme.secondary.withOpacity(0.05),
+                    Theme.of(context).colorScheme.surface,
+                  ],
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () {
-                      // TODO: Add documentation link
-                    },
-                    child: const Text('Learn More'),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 80),
-            const Text(
-              'Features',
-              style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 32),
-            const FeatureCard(
-              icon: Icons.rocket_launch,
-              title: 'Instant Deployment',
-              description: 'Deploy your Flutter web apps with a single click.',
-            ),
-            const SizedBox(height: 16),
-            const FeatureCard(
-              icon: Icons.share,
-              title: 'Shareable Links',
-              description:
-                  'Get a unique URL for your app that anyone can access.',
-            ),
-            const SizedBox(height: 16),
-            const FeatureCard(
-              icon: Icons.security,
-              title: 'Secure & Reliable',
-              description:
-                  'Built on proven infrastructure with automatic scaling.',
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class FeatureCard extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String description;
-
-  const FeatureCard({
-    super.key,
-    required this.icon,
-    required this.title,
-    required this.description,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Row(
-          children: [
-            Icon(icon, size: 48, color: Colors.blue),
-            const SizedBox(width: 24),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    description,
-                    style: const TextStyle(fontSize: 16, color: Colors.grey),
-                  ),
-                ],
               ),
             ),
-          ],
-        ),
+          ),
+
+          // Floating particles effect
+          Positioned.fill(child: CustomPaint(painter: ParticlesPainter())),
+
+          // Main content
+          SafeArea(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  children: [
+                    // Animated header
+                    FadeTransition(
+                      opacity: _fadeAnimation,
+                      child: SlideTransition(
+                        position: _slideAnimation,
+                        child: const AnimatedHeader(),
+                      ),
+                    ),
+
+                    const SizedBox(height: 60),
+
+                    // Hero section with Rive animation
+                    const HeroSection(),
+
+                    const SizedBox(height: 80),
+
+                    // Animated features
+                    const AnimatedFeatures(),
+
+                    const SizedBox(height: 80),
+
+                    // Call to action with particle effect
+                    const CallToAction(),
+
+                    const SizedBox(height: 60),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
