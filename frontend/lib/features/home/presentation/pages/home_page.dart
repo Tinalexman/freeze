@@ -91,22 +91,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                         child: const AnimatedHeader(),
                       ),
                     ),
-
                     const SizedBox(height: 60),
-
-                    // Hero section with Rive animation
                     const HeroSection(),
-
                     const SizedBox(height: 80),
-
-                    // Animated features
                     const AnimatedFeatures(),
-
                     const SizedBox(height: 80),
-
-                    // Call to action with particle effect
                     const CallToAction(),
-
                     const SizedBox(height: 60),
                   ],
                 ),

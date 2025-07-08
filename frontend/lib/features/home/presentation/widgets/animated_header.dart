@@ -1,74 +1,119 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:freeze/core/routing/routes.dart';
+import 'nav_button.dart';
+import 'login_button.dart';
 
-class AnimatedHeader extends StatelessWidget {
+class AnimatedHeader extends StatefulWidget {
   const AnimatedHeader({super.key});
+
+  @override
+  State<AnimatedHeader> createState() => _AnimatedHeaderState();
+}
+
+class _AnimatedHeaderState extends State<AnimatedHeader>
+    with TickerProviderStateMixin {
+  late AnimationController _logoController;
+  late Animation<double> _logoScale;
+  late Animation<double> _logoRotation;
+
+  @override
+  void initState() {
+    super.initState();
+    _logoController = AnimationController(
+      duration: const Duration(milliseconds: 1200),
+      vsync: this,
+    );
+
+    _logoScale = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _logoController, curve: Curves.elasticOut),
+    );
+    _logoRotation = Tween<double>(
+      begin: -0.5,
+      end: 0.0,
+    ).animate(CurvedAnimation(parent: _logoController, curve: Curves.easeOut));
+
+    _logoController.forward();
+  }
+
+  @override
+  void dispose() {
+    _logoController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        // Logo with animation
-        TweenAnimationBuilder<double>(
-          duration: const Duration(milliseconds: 800),
-          tween: Tween(begin: 0.0, end: 1.0),
-          builder: (context, value, child) {
+        // Animated logo
+        AnimatedBuilder(
+          animation: _logoController,
+          builder: (context, child) {
             return Transform.scale(
-              scale: value,
-              child: Row(
-                children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Theme.of(context).colorScheme.primary,
-                          Theme.of(context).colorScheme.secondary,
+              scale: _logoScale.value,
+              child: Transform.rotate(
+                angle: _logoRotation.value,
+                child: Row(
+                  children: [
+                    Container(
+                      width: 50,
+                      height: 50,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Theme.of(context).colorScheme.primary,
+                            Theme.of(context).colorScheme.secondary,
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(15),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.primary.withOpacity(0.3),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
                         ],
                       ),
-                      borderRadius: BorderRadius.circular(12),
+                      child: const Icon(
+                        Icons.icecream,
+                        color: Colors.white,
+                        size: 28,
+                      ),
                     ),
-                    child: const Icon(
-                      Icons.icecream,
-                      color: Colors.white,
-                      size: 24,
+                    const SizedBox(width: 15),
+                    const Text(
+                      'Freeze',
+                      style: TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: -0.5,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  const Text(
-                    'Freeze',
-                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-                  ),
-                ],
+                  ],
+                ),
               ),
             );
           },
         ),
 
-        // Login button with hover effect
-        MouseRegion(
-          cursor: SystemMouseCursors.click,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(25),
-              border: Border.all(
-                color: Theme.of(context).colorScheme.primary,
-                width: 2,
-              ),
+        // Animated navigation buttons
+        Row(
+          children: [
+            NavButton(
+              text: 'Features',
+              onTap: () => context.go(Routes.features),
             ),
-            child: GestureDetector(
-              onTap: () => context.go(Routes.login),
-              child: const Text(
-                'Login',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-              ),
-            ),
-          ),
+            const SizedBox(width: 20),
+            NavButton(text: 'Docs', onTap: () => context.go(Routes.docs)),
+            const SizedBox(width: 20),
+            const LoginButton(),
+          ],
         ),
       ],
     );
